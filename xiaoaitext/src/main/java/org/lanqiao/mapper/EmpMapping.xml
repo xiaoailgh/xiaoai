@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.lanqiao.mapper.PostMapper">
+	
+	<!-- 联合查询两个表所有信息 -->
+	<select id="selectPost" resultType="hashmap" parameterType="int">
+		<![CDATA[
+			select post_id,post_title,post_author,post_date,post_content,reply_id,reply_author,reply_date,reply_content from post left join reply on post_id=reply_post_id where post_id=#{post_id}
+		]]>
+			
+	</select>
+	<!-- 查询所有主贴 -->
+	<select id="selectPost1" resultType="org.lanqiao.domain.Post">
+		<![CDATA[
+			select post_id,post_title,post_author,post_date,post_content from post
+		]]>
+			
+	</select>
+	<!-- 通过id查询主贴 -->
+	<select id="selectPost2" resultType="org.lanqiao.domain.Post" parameterType="int">
+		<![CDATA[
+			select post_id,post_title,post_author,post_date,post_content from post where post_id=#{post_id}
+		]]>
+			
+	</select>
+	<!-- 添加回帖 -->
+	<insert id="insertReply" parameterType="hashmap">
+		insert into reply (reply_author,reply_content,reply_date,reply_post_id) values (#{reply_author},#{reply_content},#{reply_date},#{reply_post_id})
+	</insert>
+	<!-- 删除回复 -->
+	<delete id="deleteReply" >
+		delete from reply where reply_id in
+		<foreach collection="array" item="item" index="index" open="("  separator=","   close=")">
+			#{item}
+		</foreach>
+	</delete>
+	<!-- 多条件查询主贴 -->
+	<select id="selectPostVo" resultType="org.lanqiao.domain.Post" parameterType="hashmap">
+			  SELECT post_author,post_date,post_id,post_title,post_content FROM post
+			  <where> 
+			    <if test="post_author != null">
+			         post_author = #{post_author}
+			    </if> 
+			    <if test="post_date != null">
+			        AND post_date = #{post_date}
+			    </if>
+			  </where>
+	</select>
+	<!-- 登陆 -->
+	<select id="login" parameterType="hashmap" resultType="HashMap">
+		select username,password from login where username=#{username} and password=#{password}
+	</select>
+	<!-- 发帖 -->
+	<insert id="insertPost" parameterType="org.lanqiao.domain.Post">
+		insert into post (post_author,post_title,post_content,post_date) values (#{post_author},#{post_title},#{post_content},#{post_date})
+	</insert>
+	<!-- 删帖 -->
+	<delete id="deletePost">
+		delete from post where post_id in
+		<foreach collection="array" item="item" index="index" open="("  separator=","   close=")">
+			#{item}
+		</foreach>
+	</delete>
+	<insert id="insertHistory" parameterType="org.lanqiao.domain.Post">
+		insert into history (post_id,post_author,post_date,post_title,post_content) values (#{post_id},#{post_author},#{post_date},#{post_title},#{post_content})
+	</insert>
+	<select id="selectHistory" resultType="org.lanqiao.domain.Post">
+		select post_id,post_author,post_date,post_title,post_content from post where post_id in
+		<foreach collection="array" item="item" index="index" open="("  separator=","   close=")">
+			#{item}
+		</foreach>
+	</select>
+</mapper>
